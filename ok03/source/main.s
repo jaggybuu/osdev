@@ -1,20 +1,30 @@
-.section .text
+.section .init
 .global _start
 _start:
+	b main
 
-	/* put pointer to gpio pin base in r0 */
-	ldr r0, =0x20200000
+.section .text
+.global main
+main:
+	mov sp, #0x8000
 
-	/* enable pin 16 as output */
-	mov r1, #1
-	lsl r1, #18
-	str r1, [r0, #4]
+	pinNum .req r0
+	pinFunc .req r1
+	mov pinNum, #16
+	mov pinFunc, #1
+	bl SetGpioFunction
+	.unreq pinNum
+	.unreq pinFunc
 
 	loop$:
 		/* turn on led */
-		mov r1, #1
-		lsl r1, #16
-		str r1, [r0, #40]
+		pinNum .req r0
+		pinVal .req r1
+		mov pinNum, #16
+		mov pinVal, #0
+		bl SetGpio
+		.unreq pinNum
+		.unreq pinVal
 
 		/* wait for a time */
 		mov r2, #0x3F0000
@@ -24,9 +34,13 @@ _start:
 			bne wait1$
 
 		/* turn off led */
-		mov r1, #1
-		lsl r1, #16
-		str r1, [r0, #28]
+		pinNum .req r0
+		pinVal .req r1
+		mov pinNum, #16
+		mov pinVal, #1
+		bl SetGpio
+		.unreq pinNum
+		.unreq pinVal
 
 		/* wait again */
 		mov r2, #0x3F0000
